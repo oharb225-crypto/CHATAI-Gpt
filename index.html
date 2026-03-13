@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>chathot AI</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background: #0f111a;
+    color: #fff;
+}
+
+header {
+    background: linear-gradient(90deg, #1E90FF, #0a2a5e);
+    padding: 20px;
+    text-align: center;
+    font-size: 2em;
+    font-weight: 700;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+#chat-container {
+    max-width: 700px;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    height: 70vh;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    background: #111;
+}
+
+#chat {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.message {
+    padding: 10px 15px;
+    border-radius: 15px;
+    max-width: 80%;
+    word-wrap: break-word;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.message-user {
+    background: #FFD700;
+    color: #111;
+    align-self: flex-end;
+    border-bottom-right-radius: 0;
+}
+
+.message-ai {
+    background: #1E90FF;
+    color: #fff;
+    align-self: flex-start;
+    border-bottom-left-radius: 0;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+#input-container {
+    display: flex;
+    padding: 10px;
+    background: #0a1a3c;
+}
+
+#msg {
+    flex: 1;
+    padding: 12px 15px;
+    border-radius: 25px;
+    border: none;
+    outline: none;
+    font-size: 1em;
+    background: #222;
+    color: #fff;
+}
+
+#send-btn {
+    margin-left: 10px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 25px;
+    background: #1E90FF;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#send-btn:hover {
+    background: #3aa0ff;
+}
+
+@media(max-width: 600px){
+    #chat-container {
+        height: 60vh;
+        margin: 10px;
+    }
+    #msg {
+        font-size: 0.9em;
+    }
+    #send-btn {
+        padding: 10px 15px;
+        font-size: 0.9em;
+    }
+}
+</style>
+</head>
+<body>
+
+<header>chathot AI</header>
+
+<div id="chat-container">
+    <div id="chat"></div>
+    <div id="input-container">
+        <input type="text" id="msg" placeholder="search here...">
+        <button id="send-btn" onclick="send()">Send</button>
+    </div>
+</div>
+
+<script>
+const chatDiv = document.getElementById("chat");
+const msgInput = document.getElementById("msg");
+
+async function send() {
+    const msg = msgInput.value.trim();
+    if (!msg) return;
+
+    // عرض رسالة المستخدم
+    chatDiv.innerHTML += `<div class="message message-user"><b>انت:</b> ${msg}</div>`;
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+    msgInput.value = "";
+
+    try {
+        const response = await fetch("http://localhost:3000/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: msg })
+        });
+
+        const data = await response.json();
+        chatDiv.innerHTML += `<div class="message message-ai"><b>AI:</b> ${data.reply}</div>`;
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+    } catch (err) {
+        chatDiv.innerHTML += `<div class="message message-ai"><b>AI:</b> حدث خطأ، جرب مرة أخرى.</div>`;
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+        console.error(err);
+    }
+}
+
+// ارسال الرسالة عند الضغط على Enter
+msgInput.addEventListener("keypress", function(e){
+    if(e.key === "Enter"){
+        send();
+    }
+});
+</script>
+
+</body>
+</html>
